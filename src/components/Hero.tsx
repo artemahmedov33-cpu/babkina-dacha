@@ -4,15 +4,16 @@ import RevealLayer from "./RevealLayer";
 import { contacts } from "../data/catalog";
 
 const BG_IMAGE_1 =
-  "https://static.tildacdn.com/tild3363-3361-4661-b364-303233356632/-/resize/1600x/_.jpg";
+  "https://static.tildacdn.com/tild3363-3361-4661-b364-303233356632/-/resize/1400x/_.jpg";
 const BG_IMAGE_2 =
-  "https://static.tildacdn.com/tild6439-3139-4732-a334-613632353337/____1.png";
+  "https://static.tildacdn.com/tild6439-3139-4732-a334-613632353337/-/resize/700x/____1.png";
 
 const NAV_ITEMS = [
   { label: "Главная", href: "#hero" },
   { label: "Дома", href: "#houses" },
   { label: "Барнхаусы", href: "#barnhouses" },
   { label: "Бани", href: "#banya" },
+  { label: "Галерея", href: "#gallery" },
   { label: "Контакты", href: "#contacts" },
 ];
 
@@ -158,6 +159,12 @@ export default function Hero() {
         >
           Оставить заявку
         </a>
+        <p className="text-[11px] text-white/50 leading-snug max-w-[220px]">
+          Нажимая на кнопку, вы даёте согласие на обработку персональных данных и соглашаетесь с{" "}
+          <a href="#privacy" className="underline hover:text-white/80">
+            политикой конфиденциальности
+          </a>
+        </p>
       </div>
     </section>
   );

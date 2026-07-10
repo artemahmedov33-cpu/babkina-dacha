@@ -2,6 +2,11 @@ import { useEffect, useRef, useState } from "react";
 
 const SPOTLIGHT_R = 260;
 
+// 1x1 fully transparent PNG — safe default mask so the reveal layer stays
+// hidden until the real spotlight gradient is ready (never flashes fully visible).
+const BLANK_MASK =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+
 type RevealLayerProps = {
   image: string;
   cursorX: number;
@@ -10,7 +15,7 @@ type RevealLayerProps = {
 
 export default function RevealLayer({ image, cursorX, cursorY }: RevealLayerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [maskUrl, setMaskUrl] = useState<string | null>(null);
+  const [maskUrl, setMaskUrl] = useState<string>(BLANK_MASK);
 
   useEffect(() => {
     const resize = () => {
@@ -26,26 +31,31 @@ export default function RevealLayer({ image, cursorX, cursorY }: RevealLayerProp
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || canvas.width === 0 || canvas.height === 0) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    try {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const gradient = ctx.createRadialGradient(cursorX, cursorY, 0, cursorX, cursorY, SPOTLIGHT_R);
-    gradient.addColorStop(0, "rgba(255,255,255,1)");
-    gradient.addColorStop(0.4, "rgba(255,255,255,1)");
-    gradient.addColorStop(0.6, "rgba(255,255,255,0.75)");
-    gradient.addColorStop(0.75, "rgba(255,255,255,0.4)");
-    gradient.addColorStop(0.88, "rgba(255,255,255,0.12)");
-    gradient.addColorStop(1, "rgba(255,255,255,0)");
+      const gradient = ctx.createRadialGradient(cursorX, cursorY, 0, cursorX, cursorY, SPOTLIGHT_R);
+      gradient.addColorStop(0, "rgba(255,255,255,1)");
+      gradient.addColorStop(0.4, "rgba(255,255,255,1)");
+      gradient.addColorStop(0.6, "rgba(255,255,255,0.75)");
+      gradient.addColorStop(0.75, "rgba(255,255,255,0.4)");
+      gradient.addColorStop(0.88, "rgba(255,255,255,0.12)");
+      gradient.addColorStop(1, "rgba(255,255,255,0)");
 
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(cursorX, cursorY, SPOTLIGHT_R, 0, Math.PI * 2);
-    ctx.fill();
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(cursorX, cursorY, SPOTLIGHT_R, 0, Math.PI * 2);
+      ctx.fill();
 
-    setMaskUrl(canvas.toDataURL());
+      setMaskUrl(canvas.toDataURL());
+    } catch {
+      // Canvas export blocked in this environment — keep the safe blank mask.
+      setMaskUrl(BLANK_MASK);
+    }
   }, [cursorX, cursorY]);
 
   return (
@@ -55,8 +65,8 @@ export default function RevealLayer({ image, cursorX, cursorY }: RevealLayerProp
         className="absolute inset-0 bg-center bg-cover bg-no-repeat z-30 pointer-events-none"
         style={{
           backgroundImage: `url(${image})`,
-          WebkitMaskImage: maskUrl ? `url(${maskUrl})` : undefined,
-          maskImage: maskUrl ? `url(${maskUrl})` : undefined,
+          WebkitMaskImage: `url(${maskUrl})`,
+          maskImage: `url(${maskUrl})`,
           WebkitMaskSize: "100% 100%",
           maskSize: "100% 100%",
         }}
